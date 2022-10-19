@@ -157,7 +157,8 @@ class randomfoxAPI:
             imgname = name + '.' + ext
         else:
             imgname = self.__imgurl.split('/')[-1]
-            
+        
+        ipath = ''
         if path:
             istilde = path.split('/')[0] == '~'
             if istilde:
@@ -169,5 +170,9 @@ class randomfoxAPI:
                 img.save(os.path.join(ipath,imgname))
             else:
                 print(f'{ipath} does not exist')
+                return 
         else:
-            img.save(os.path.join('/','tmp',imgname))
+            ipath = os.path.join('/','tmp')
+            img.save(os.path.join(ipath,imgname))
+            
+        print(f'{imgname} saved at {ipath}')
