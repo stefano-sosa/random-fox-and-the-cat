@@ -35,16 +35,6 @@ except ModuleNotFoundError:
     message('pandas')
 
 class catAPI:
-    def __decodeparams(self):
-        validparams = {'limit':'limit','breed':'breed_ids'}
-        for param in self.params:
-            try:
-                self.queries[validparams[param]] = self.params[param]
-            except:
-                raise ValueError(f'{param} is not a valid parameter')
-    
-    def __buildurl(self): 
-        self.__baseurl = (self.__url + '?' + urllib.parse.urlencode(self.queries))
     
     def __init__(self, *args, **params):
         self.data = []
@@ -55,6 +45,17 @@ class catAPI:
         self.params = params
         self.queries = {}
         self.__url = 'https://api.thecatapi.com/v1/images/search'
+        
+    def __decodeparams(self):
+        validparams = {'limit':'limit','breed':'breed_ids'}
+        for param in self.params:
+            try:
+                self.queries[validparams[param]] = self.params[param]
+            except:
+                raise ValueError(f'{param} is not a valid parameter')
+    
+    def __buildurl(self): 
+        self.__baseurl = (self.__url + '?' + urllib.parse.urlencode(self.queries))
         
     def __geturls(self):
         self.__urls = []
