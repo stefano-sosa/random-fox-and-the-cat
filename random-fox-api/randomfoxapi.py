@@ -103,7 +103,27 @@ class randomfoxAPI:
             return isize
         except KeyError:
             print(f'{arg} is not a valid Key. The argument must be an integer, a list, or a tuple')
-            return 
+            return
+       
+    def __str_msg(self, arg):
+        return f'{arg} is string, and must be a positive integer'
+    
+    def __list_msg(self, arg):
+        a, b = arg
+        return f'{a} is {type(a)}, {b} is {type(b)}, and both must be positive integers'
+    
+    def __tuple_msg(self, arg):
+        a, b = arg
+        return f'{a} is {type(a)}, {b} is {type(b)}, and both must be positive integers'
+    
+    def __switch_msg(self, arg):
+        tipo = type(arg)
+        argdecode = {
+            str : self.__str_msg,
+            list : self.__list_msg, 
+            tuple : self.__tuple_msg
+        }
+        return argdecode[tipo](arg)
         
     def resize_image(self, size=()):
         """
@@ -119,8 +139,7 @@ class randomfoxAPI:
             isize = self.__switch_arg(size)
             self.img = self.img.resize(isize)
         except TypeError:
-            a, b = size
-            print(f'{a} is {type(a)}, {b} is {type(b)}, and both must be integers')
+            print(self.__switch_msg(size))
             
     def restore_image(self):
         """
