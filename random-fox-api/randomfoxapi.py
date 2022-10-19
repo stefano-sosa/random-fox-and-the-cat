@@ -88,25 +88,22 @@ class randomfoxAPI:
     def __arg_list(self, mylist):
         return mylist[0], mylist[1]
 
-    def __arg_tuple(self, mytuple):
+    def __arg_tuple(self, mytuple): 
         return mytuple[0], mytuple[1]
     
     def __switch_arg(self, arg):
-        #tipo = type(arg)
-        #argdecode = {int : self.__arg_int(arg), list : self.__arg_list(arg), tuple : self.__arg_tuple(arg)}
-        #isize = argdecode[tipo]
-        #return isize
-        #print(isize)
-        if isinstance(arg, int):
-            return self.__arg_int(arg)
-        
-        if isinstance(arg, list):
-            return self.__arg_list(arg)
-        
-        if isinstance(arg, tuple):
-            return self.__arg_tuple(arg)
-        
-        raise ValueError(f'{arg} is {type(arg)}. The argument must an integer, a list, or a tuple.')
+        tipo = type(arg)
+        argdecode = {
+            int : self.__arg_int, 
+            list : self.__arg_list, 
+            tuple : self.__arg_tuple
+        }
+        try:
+            isize = argdecode[tipo](arg)
+            return isize
+        except KeyError:
+            print(f'{arg} is not a valid Key. The argument must be an integer, a list, or a tuple')
+            return 
         
     def resize_image(self, size=()):
         """
