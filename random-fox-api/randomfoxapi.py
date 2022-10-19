@@ -81,29 +81,6 @@ class randomfoxAPI:
         self.__original = Image.open(BytesIO(imagereq.content)) 
         self.img = self.__original
         self.imgsize = self.img.size
-
-    def __arg_int(self, myint):
-        return myint, myint
-    
-    def __arg_list(self, mylist):
-        return mylist[0], mylist[1]
-
-    def __arg_tuple(self, mytuple): 
-        return mytuple[0], mytuple[1]
-    
-    def __switch_arg(self, arg):
-        tipo = type(arg)
-        argdecode = {
-            int : self.__arg_int, 
-            list : self.__arg_list, 
-            tuple : self.__arg_tuple
-        }
-        try:
-            isize = argdecode[tipo](arg)
-            return isize
-        except KeyError:
-            print(f'{arg} is not a valid Key. The argument must be an integer, a list, or a tuple')
-            return
        
     def __str_msg(self, arg):
         return f'{arg} is string, and must be a positive integer'
@@ -136,7 +113,10 @@ class randomfoxAPI:
         Resize the existing image with the size specified in 'size', and then replaces it.
         """
         try:
-            isize = self.__switch_arg(size)
+            if isinstance(size, int):
+                isize = size, size
+            else:
+                isize = size[0], size[1]
             self.img = self.img.resize(isize)
         except TypeError:
             print(self.__switch_msg(size))
