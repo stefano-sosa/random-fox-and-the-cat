@@ -36,54 +36,50 @@ except ModuleNotFoundError:
 
 class catAPI:
     
-    def __init__(self, *args, **params):
+    def __init__(self):
         self.data = []
         self.collage = None
         self.breeds = None
         self.__urls = []
         self.__imgs = []
-        self.params = params
         self.queries = {}
-        self.__url = 'https://api.thecatapi.com/v1/images/search'
+        self.__baseurl = 'https://api.thecatapi.com/'
+        self.version = ''
         
-    def __decodeparams(self):
-        validparams = {'limit':'limit','breed':'breed_ids'}
-        for param in self.params:
-            try:
-                self.queries[validparams[param]] = self.params[param]
-            except:
-                raise ValueError(f'{param} is not a valid parameter')
-    
-    def __buildurl(self): 
-        self.__baseurl = (self.__url + '?' + urllib.parse.urlencode(self.queries))
+    def req_version(self):
+        req = requests.get(self.__baseurl)
+        loads = json.loads(req.content)
+        self.version = f"{loads['message']} {loads['version']}"
         
-    def __geturls(self):
-        self.__urls = []
-        for load in self.data:
-            self.__urls.append(load['url'])
-            
-    def __getimgs(self):
-        self.__imgs = []
-        for url in self.__urls:
-            dataurlres = requests.get(url)
-            self.__imgs.append(Image.open(BytesIO(dataurlres.content)))
-            
-    def getdata(self):
-        self.__decodeparams()
-        self.__buildurl()
-        reqs = requests.get(self.__baseurl)
-        self.data = json.loads(reqs.content.decode('utf8').replace("'", '"'))
-        self.__geturls()
-        self.__getimgs()
-        
-    def getbreeds(self):
-        breedurl = 'https://api.thecatapi.com/v1/breeds'
+    def req_breeds(self):
+        breedurl = self.__baseurl+'/v1/breeds'
         req = requests.get(breedurl)
         loads = json.loads(req.content.decode('utf8'))
         idsandnames = []
         for load in loads:
             idsandnames.append({'Name':load['name'], 'id':load['id']})
         self.breeds  = pd.DataFrame(idsandnames)
+    
+    def __buildurl(self, limit='', breed=''): 
+        url = self.__baseurl + 'v1/images/search?'
+        return url + urllib.parse.urlencode({'limit':limit, 'breed_ids': breed})
+        
+    def __storeurls(self):
+        self.__urls = []
+        for load in self.data:
+            self.__urls.append(load['url'])
+            
+    def __storeimgs(self):
+        self.__imgs = []
+        for url in self.__urls:
+            dataurlres = requests.get(url)
+            self.__imgs.append(Image.open(BytesIO(dataurlres.content)))
+            
+    def req_data(self, *, limit=1, breed=''):
+        req = requests.get(self.__buildurl(limit,breed))
+        self.data = json.loads(req.content)
+        self.__storeurls()
+        self.__storeimgs()
         
     def resize(self, factor):
         try:
@@ -96,7 +92,11 @@ class catAPI:
     def __getitem__(self, args):    
         if not isinstance(args, int):
             raise ValueError(f'{args} has to be an integer')
-        return self.__imgs[args]
+        try:
+            return self.__imgs[args]
+        except IndexError:
+            numel = len(self.__urls)
+            print(f"The class only has {numel} {'element' if numel==1 else 'elements'}")
     
     def create_collage(self, tam=500):
         nrows = 1
