@@ -44,7 +44,7 @@ class catAPI:
         self.breeds = None
         self.__urls = []
         self.__imgs = []
-        self.queries = {}
+        self.__breedsdeco = {}
         self.__scheme = 'https'
         self.__netloc = 'api.thecatapi.com/'
         self.version = ''
@@ -85,6 +85,7 @@ class catAPI:
         loads = json.loads(req.content.decode('utf8'))
         idsandnames = []
         for load in loads:
+            self.__breedsdeco[load['name']] = load['id']
             idsandnames.append({'Name':load['name'], 'id':load['id']})
         self.breeds  = pd.DataFrame(idsandnames)
         
@@ -102,7 +103,7 @@ class catAPI:
     def req_images(self, *, limit=1, breed=''):
         query_params = {
             'limit' : limit,
-            'breed_ids' : breed
+            'breed_ids' : self.__breedsdeco.get(breed,'')
         }
         url = self.__buildURL(
             scheme = self.__scheme, 
