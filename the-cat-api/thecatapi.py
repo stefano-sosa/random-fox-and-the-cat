@@ -158,10 +158,10 @@ class catAPI:
             y = 0
             for j in range(ncols):
                 cat = self.__imgs[i*ncols+j].convert("RGBA")
-                photo = cat.resize((500,500))        
+                photo = cat.resize((tam, tam))        
                 collage.paste(photo, (x,y))
-                y += 500
-            x += 500
+                y += tam
+            x += tam
         self.collage = collage
         
     def save(self):
