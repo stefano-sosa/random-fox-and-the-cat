@@ -9,9 +9,11 @@ import os
 
 import json
 
-import urllib.parse
-
 from io import BytesIO
+
+from collections import namedtuple
+
+from urllib.parse import urljoin, urlencode, urlparse, urlunparse
 
 try:
     from PIL import Image
@@ -43,26 +45,48 @@ class catAPI:
         self.__urls = []
         self.__imgs = []
         self.queries = {}
-        self.__baseurl = 'https://api.thecatapi.com/'
+        self.__scheme = 'https'
+        self.__netloc = 'api.thecatapi.com/'
         self.version = ''
+    
+    def __buildURL(self, *, scheme='', netloc='', path='', url='', query_params={}, fragment=''):
+        Components = namedtuple(
+            typename='Components', 
+            field_names=['scheme', 'netloc', 'url', 'path', 'query', 'fragment']
+        )
         
+        return urlunparse(
+            Components(
+                scheme=scheme,
+                netloc=netloc,
+                query=urlencode(query_params),
+                path=path,
+                url=url,
+                fragment=fragment
+            )
+        )
+    
     def req_version(self):
-        req = requests.get(self.__baseurl)
+        url = self.__buildURL(scheme=self.__scheme, netloc=self.__netloc)
+        req = requests.get(url)
         loads = json.loads(req.content)
         self.version = f"{loads['message']} {loads['version']}"
         
     def req_breeds(self):
-        breedurl = self.__baseurl+'/v1/breeds'
-        req = requests.get(breedurl)
+        url = self.__buildURL(
+            scheme = self.__scheme, 
+            netloc = self.__netloc, 
+            path = '', 
+            url = '/v1/breeds', 
+            query_params={}, 
+            fragment=''
+        )
+        req = requests.get(url)
         loads = json.loads(req.content.decode('utf8'))
         idsandnames = []
         for load in loads:
             idsandnames.append({'Name':load['name'], 'id':load['id']})
         self.breeds  = pd.DataFrame(idsandnames)
-    
-    def __buildurl(self, limit='', breed=''): 
-        url = self.__baseurl + 'v1/images/search?'
-        return url + urllib.parse.urlencode({'limit':limit, 'breed_ids': breed})
         
     def __storeurls(self):
         self.__urls = []
@@ -75,8 +99,20 @@ class catAPI:
             dataurlres = requests.get(url)
             self.__imgs.append(Image.open(BytesIO(dataurlres.content)))
             
-    def req_data(self, *, limit=1, breed=''):
-        req = requests.get(self.__buildurl(limit,breed))
+    def req_images(self, *, limit=1, breed=''):
+        query_params = {
+            'limit' : limit,
+            'breed_ids' : breed
+        }
+        url = self.__buildURL(
+            scheme = self.__scheme, 
+            netloc = self.__netloc, 
+            path = '', 
+            url = '/v1/images/search', 
+            query_params = query_params, 
+            fragment = ''
+        )
+        req = requests.get(url)
         self.data = json.loads(req.content)
         self.__storeurls()
         self.__storeimgs()
