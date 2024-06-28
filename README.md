@@ -1,3 +1,3 @@
-# sobre-apis
+# Random Fox and The Cat
 
-Apuntes y código sobre como usar APIs. Se procurará que los avances estén resueltos en Python y Wolfram.
+Código sobre como hacer un módulo de Python que permita interactuar con APIs desde un script.
