@@ -9,6 +9,8 @@ import os
 
 import json
 
+import random
+
 from io import BytesIO
 
 from collections import namedtuple
@@ -46,7 +48,7 @@ class catAPI:
         self.__imgs = []
         self.__breedsdeco = {}
         self.__scheme = 'https'
-        self.__netloc = 'api.thecatapi.com/'
+        self.__netloc = 'api.thecatapi.com'
         self.version = ''
     
     def __buildURL(self, *, scheme='', netloc='', path='', url='', query_params={}, fragment=''):
@@ -92,29 +94,35 @@ class catAPI:
     def __storeurls(self):
         self.__urls = []
         for load in self.data:
-            self.__urls.append(load['url'])
+            if load['url'] not in self.__urls:
+                self.__urls.append(load['url'])
             
     def __storeimgs(self):
         self.__imgs = []
         for url in self.__urls:
             dataurlres = requests.get(url)
-            self.__imgs.append(Image.open(BytesIO(dataurlres.content)))
+            if dataurlres not in self.__imgs:
+                self.__imgs.append(dataurlres.content)
             
-    def req_images(self, *, limit=1, breed=''):
+    def req_images(self, *, limit=1, breed='', size='small'):
         query_params = {
             'limit' : limit,
-            'breed_ids' : self.__breedsdeco.get(breed,'')
+            'size' : size,
+            'breed_ids' : self.__breedsdeco.get(breed, '')
         }
         url = self.__buildURL(
             scheme = self.__scheme, 
             netloc = self.__netloc, 
             path = '', 
-            url = '/v1/images/search', 
+            url = 'v1/images/search', 
             query_params = query_params, 
             fragment = ''
         )
         req = requests.get(url)
-        self.data = json.loads(req.content)
+        data = json.loads(req.content)
+        if len(data) > limit:
+            data = random.sample(data, limit)
+        self.data = data
         self.__storeurls()
         self.__storeimgs()
         
@@ -124,18 +132,18 @@ class catAPI:
                 rows, cols = img.size
                 self.__imgs[i] = img.resize((rows // factor, cols // factor))
         except:
-            raise ValueError(f'{size} is not a valid size')
+            raise ValueError(f'{factor} is not a valid factor')
             
     def __getitem__(self, args):    
         if not isinstance(args, int):
             raise ValueError(f'{args} has to be an integer')
         try:
-            return self.__imgs[args]
+            return Image.open(BytesIO(self.__imgs[args])).resize((256, 256))
         except IndexError:
             numel = len(self.__urls)
-            print(f"The class only has {numel} {'element' if numel==1 else 'elements'}")
+            print(f"There are only {numel} {'element' if numel==1 else 'elements'}")
     
-    def create_collage(self, tam=500):
+    def create_collage(self, tam=256):
         nrows = 1
         ncols = 1
         numel = len(self.data)
@@ -157,7 +165,8 @@ class catAPI:
         for i in range(nrows):
             y = 0
             for j in range(ncols):
-                cat = self.__imgs[i*ncols+j].convert("RGBA")
+                imgdata = self.__imgs[i*ncols+j]
+                cat = Image.open(BytesIO(imgdata)).convert("RGBA")
                 photo = cat.resize((tam, tam))        
                 collage.paste(photo, (x,y))
                 y += tam
