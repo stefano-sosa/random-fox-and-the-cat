@@ -37,7 +37,7 @@ class RandomFoxAPI:
 
     Methods
     -------
-    req_image()
+    fetch_image()
         Request the image
         
     resize_image(size)
@@ -57,10 +57,10 @@ class RandomFoxAPI:
         -----------
         Inits the class
         """
-        self.__imgurl = None
+        self._imgurl = None
         self.img = None
         self.imgsize = None
-        self.__baseurl = 'https://randomfox.ca/floof/'
+        self._baseurl = 'https://randomfox.ca/floof/'
     
     def fetch_image(self):
         """
@@ -70,15 +70,26 @@ class RandomFoxAPI:
         
         Description:
         -----------
-        Performs a GET HTTP request to the endpoint of the API, and stores the image in the img attribute
+        Performs a GET request to the API, and stores the image
         """
-        req = requests.get(self.__baseurl)
-        load = json.loads(req.content)
-        self.__imgurl = load['image']
-        imagereq = requests.get(load['image'])
-        self.__original = Image.open(BytesIO(imagereq.content)) 
-        self.img = self.__original
-        self.imgsize = self.img.size
+        try:
+            response = requests.get(self.__baseurl)
+            response.raise_for_status()
+            data = response.json()
+            self._imgurl = data['image']
+            img_response = requests.get(data['image'])
+            img_response.raise_for_status()
+            self._original = Image.open(BytesIO(img_response.content))
+            self.img = self._original
+            self.imgsize = self.img.size
+        except requests.exceptions.RequestException as e:
+            print(f'Network error while fetching image: {e}')
+            raise
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f'Unexpected API response: {e}')
+        except Exception as e:
+            print(f'Failed to open image: {e}')
+            raise
         
     def resize_image(self, size=()):
         """
