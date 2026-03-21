@@ -24,7 +24,7 @@ try:
 except ModuleNotFoundError:
     message('requests')
     
-class randomfoxAPI:
+class RandomFoxAPI:
     """
     Class used to request a random image of an fox
 
