@@ -62,7 +62,7 @@ class RandomFoxAPI:
         self.imgsize = None
         self.__baseurl = 'https://randomfox.ca/floof/'
     
-    def req_image(self):
+    def fetch_image(self):
         """
         Parameters
         ----------
