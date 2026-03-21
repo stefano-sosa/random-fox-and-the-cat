@@ -1,0 +1,1 @@
+from .randomfoxapi import randomfoxAPI
