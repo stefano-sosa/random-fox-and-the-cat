@@ -73,7 +73,7 @@ class RandomFoxAPI:
         Performs a GET request to the API, and stores the image
         """
         try:
-            response = requests.get(self.__baseurl)
+            response = requests.get(self._baseurl)
             response.raise_for_status()
             data = response.json()
             self._imgurl = data['image']
