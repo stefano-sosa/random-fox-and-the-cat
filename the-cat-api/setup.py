@@ -1,0 +1,13 @@
+from setuptools import setup, find_packages
+
+setup(
+    name='thecat',                    
+    version='0.1.0',
+    packages=find_packages(),
+    install_requires=['requests', 'Pillow', 'numpy', 'pandas'],
+    author='Stefano Sosa',
+    description='API client to get cat images',
+    url='https://github.com/stefano-sosa/random-fox-and-the-cat',
+    license='MIT',
+    python_requires='>=3.6',
+)
