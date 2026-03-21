@@ -15,13 +15,13 @@ Siga estos pasos para configurar el entorno de desarrollo:
 
 Dentro del directorio del repositorio
 
-#### Linux 
+* Para Linux 
 
 ```bash
 python -m venv prj
 ```
 
-#### Windows 
+* Para Windows 
 
 ```bash
 py -m venv prj
@@ -29,13 +29,13 @@ py -m venv prj
 
 ### Activar el entorno virtual
 
-#### Linux 
+* Para Linux 
 
 ```bash
 source ./prj/bin/activate
 ```
 
-#### Windows 
+* Para Windows 
 
 ```bash
 .\prj\Scripts\activate
@@ -43,13 +43,13 @@ source ./prj/bin/activate
 
 ### Instalar dependencias
 
-#### Linux
+* Para Linux
 
 ```bash
 pip install -r requirements.txt
 ```
 
-#### Windows
+* Para Windows
 
 ```bash
 py -m pip install -r requirements.txt
@@ -61,6 +61,79 @@ py -m pip install -r requirements.txt
 deactivate
 ```
 
+## Guía de instalación 
+
+Siga estos pasos para instalar alguno de los dos paquetes:
+
+### Crear el entorno virtual
+
+Dentro del directorio del repositorio
+
+* Para Linux 
+
+```bash
+python -m venv prj
+```
+
+* Para Windows 
+
+```bash
+py -m venv prj
+```
+
+### Activar el entorno virtual
+
+* Para Linux 
+
+```bash
+source ./prj/bin/activate
+```
+
+* Para Windows 
+
+```bash
+.\prj\Scripts\activate
+```
+
+### Instalación de paquetes
+
+* Para instalar `randomfox`
+
+```bash
+pip install git+https://github.com/stefano-sosa/random-fox-and-the-cat.git#subdirectory=random-fox-api
+```
+
+
+* Para instalar `thecat`
+
+```bash
+pip install git+https://github.com/stefano-sosa/random-fox-and-the-cat.git#subdirectory=the-cat-api
+```
+
+### Prueba local desde CLI
+
+* Para probar `randomfox`:
+
+```bash
+python -c "from randomfox import randomfoxAPI; fox = randomfoxAPI(); fox.req_image(); print(fox.imgsize); fox.save_image(name='test',path='.')"
+```
+
+Debería observar una imagen llamada `test.jpg` en el directorio en el que ejecutó el comando.
+
+* Para probar `thecat`:
+
+```bash
+python -c "from thecat import catAPI; cat = catAPI(); cat.req_version(); print(cat.version)"
+```
+
+Debería observar un mensaje parecido a `The Cat API 1.4.6` en la consola.
+
+### Desactivar el entorno (cuando haya terminado)
+
+```
+deactivate
+```
+
 ## Descargo de responsabilidad
 
-Las imágenes en los cuadernos son resultados de las APIs y están publicadas como demostración del funcionamiento de la interfaz. No soy el propietario de estos archivos, ni reclamo derechos sobre ellos. Si eres el propietario del contenido y deseas que lo retire, por favor contacta conmigo.
+Las imágenes en los cuadernos son resultados de las APIs y están publicadas como demostración del funcionamiento de la interfaz. No soy el propietario de estos archivos, ni de las API, ni reclamo derechos sobre ellos. Si eres el propietario del contenido y deseas que lo retire, por favor contacta conmigo.
