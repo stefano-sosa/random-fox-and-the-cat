@@ -115,7 +115,7 @@ class RandomFoxAPI:
             print("Error: dimensions must be positive integers")
             return
 
-        self.img = self.img.resize(new_size)
+        self.img = self._original.resize(new_size)
             
     def restore_image(self):
         """
