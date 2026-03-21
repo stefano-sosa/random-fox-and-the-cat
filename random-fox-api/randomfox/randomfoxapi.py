@@ -60,6 +60,7 @@ class RandomFoxAPI:
         self._imgurl = None
         self.img = None
         self.imgsize = None
+        self._original = None
         self._baseurl = 'https://randomfox.ca/floof/'
     
     def fetch_image(self):
@@ -79,8 +80,9 @@ class RandomFoxAPI:
             self._imgurl = data['image']
             img_response = requests.get(data['image'])
             img_response.raise_for_status()
-            self._original = Image.open(BytesIO(img_response.content))
-            self.img = self._original
+            tmp = Image.open(BytesIO(img_response.content))
+            self._original = tmp
+            self.img = tmp
             self.imgsize = self.img.size
         except requests.exceptions.RequestException as e:
             print(f'Network error while fetching image: {e}')
@@ -125,7 +127,7 @@ class RandomFoxAPI:
         -----------
         Replaces the existing image with the original one.
         """
-        self.img = self.__original
+        self.img = self._original
         
     def save_image(self, *, name='', path=''):
         """
