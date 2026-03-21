@@ -79,26 +79,6 @@ class RandomFoxAPI:
         self.__original = Image.open(BytesIO(imagereq.content)) 
         self.img = self.__original
         self.imgsize = self.img.size
-       
-    def __str_msg(self, arg):
-        return f'{arg} is string, and must be a positive integer'
-    
-    def __list_msg(self, arg):
-        a, b = arg
-        return f'{a} is {type(a)}, {b} is {type(b)}, and both must be positive integers'
-    
-    def __tuple_msg(self, arg):
-        a, b = arg
-        return f'{a} is {type(a)}, {b} is {type(b)}, and both must be positive integers'
-    
-    def __switch_msg(self, arg):
-        tipo = type(arg)
-        argdecode = {
-            str : self.__str_msg,
-            list : self.__list_msg, 
-            tuple : self.__tuple_msg
-        }
-        return argdecode[tipo](arg)
         
     def resize_image(self, size=()):
         """
@@ -110,14 +90,19 @@ class RandomFoxAPI:
         -----------
         Resize the existing image with the size specified in 'size', and then replaces it.
         """
-        try:
-            if isinstance(size, int):
-                isize = size, size
-            else:
-                isize = size[0], size[1]
-            self.img = self.img.resize(isize)
-        except TypeError:
-            print(self.__switch_msg(size))
+        if isinstance(size, int):
+            new_size = (size, size)
+        elif isinstance(size, (list, tuple)) and len(size) == 2:
+            new_size = (size[0], size[1])
+        else:
+            print('Error: size must be an int or a tuple/list of two positive ints')
+            return
+        
+        if not all(isinstance(x, int) and x > 0 for x in new_size):
+            print("Error: dimensions must be positive integers")
+            return
+
+        self.img = self.img.resize(new_size)
             
     def restore_image(self):
         """
