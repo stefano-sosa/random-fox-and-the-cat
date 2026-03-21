@@ -58,10 +58,8 @@ class randomfoxAPI:
         Inits the class
         """
         self.__imgurl = None
-        self.__imgname = None
         self.img = None
         self.imgsize = None
-        self.__orgsize = None
         self.__baseurl = 'https://randomfox.ca/floof/'
     
     def req_image(self):
