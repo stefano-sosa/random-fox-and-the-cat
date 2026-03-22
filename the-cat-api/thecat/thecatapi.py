@@ -29,32 +29,14 @@ except ModuleNotFoundError:
 class CatAPI:
     
     def __init__(self):
+        self._baseurl = 'https://api.thecatapi.com'
         self.data = []
         self.collage = None
         self.breeds = None
         self.__urls = []
         self.__imgs = []
         self.__breedsdeco = {}
-        self.__scheme = 'https'
-        self.__netloc = 'api.thecatapi.com'
         self.version = ''
-    
-    def __buildURL(self, *, scheme='', netloc='', path='', url='', query_params={}, fragment=''):
-        Components = namedtuple(
-            typename='Components', 
-            field_names=['scheme', 'netloc', 'url', 'path', 'query', 'fragment']
-        )
-        
-        return urlunparse(
-            Components(
-                scheme=scheme,
-                netloc=netloc,
-                query=urlencode(query_params),
-                path=path,
-                url=url,
-                fragment=fragment
-            )
-        )
     
     def req_version(self):
         url = self.__buildURL(scheme=self.__scheme, netloc=self.__netloc)
