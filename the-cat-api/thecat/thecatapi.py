@@ -57,7 +57,6 @@ class CatAPI:
             response = requests.get(self._baseurl)
             response.raise_for_status()
             data = response.json()
-            loads = json.loads(req.content)
             self.version = f'{data["message"]} {data["version"]}'
         except requests.exceptions.RequestException as e:
             print(f'Network error while fetching image: {e}')
