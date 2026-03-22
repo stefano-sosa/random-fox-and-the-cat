@@ -59,12 +59,12 @@ class CatAPI:
             data = response.json()
             self.version = f'{data["message"]} {data["version"]}'
         except requests.exceptions.RequestException as e:
-            print(f'Network error while fetching image: {e}')
+            print(f'Network error while fetching data: {e}')
             raise
         except (json.JSONDecodeError, KeyError) as e:
             print(f'Unexpected API response: {e}')
         except Exception as e:
-            print(f'Failed to open image: {e}')
+            print(f'Error: {e}')
             raise
         
     def req_breeds(self):
