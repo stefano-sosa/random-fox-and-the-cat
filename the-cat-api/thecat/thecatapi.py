@@ -36,6 +36,7 @@ class CatAPI:
         self.collage = None
         self.breeds = []
         self.version = None
+        self.images = []
     
     def fetch_version(self):
         """
@@ -156,6 +157,40 @@ class CatAPI:
         except Exception as e:
             print(f'Error: {e}')
             raise
+
+    def download_images(self):
+        """
+        Parameters
+        ----------
+        No parameters
+
+        Description:
+        -----------
+        Download all images from the current data
+
+        Raises
+        ------
+        ValueError
+            If no data has been fetched.
+        requests.RequestException
+            If any download fails.
+        """
+        if not self.data:
+            raise ValueError('No images. Call fetch_images() first')
+
+        self.images = []
+        for item in self.data:
+            img_url = item.get('url')
+            if not img_url:
+                continue
+            try:
+                img_response = requests.get(img_url)
+                img_response.raise_for_status()
+                img = Image.open(BytesIO(img_response.content)).convert('RGB')
+                self.images.append(img)
+            except Exception as e:
+                print(f'Could not download image {img_url}: {e}')
+                continue
         
     def resize(self, factor):
         try:
