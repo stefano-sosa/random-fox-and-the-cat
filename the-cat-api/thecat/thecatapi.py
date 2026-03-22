@@ -136,11 +136,11 @@ class CatAPI:
                 'size': size,
                 'breed_ids': breed_id
             }
-            req = requests.get(url, params=params)
+            response = requests.get(url, params=params)
             response.raise_for_status()
-            self.data = response.json()
+            data = response.json()
             if len(data) > limit:
-                self.data = random.sample(self.data, limit)
+                data = random.sample(data, limit)
             self.data = data
         except requests.exceptions.RequestException as e:
             print(f'Network error while fetching data: {e}')
