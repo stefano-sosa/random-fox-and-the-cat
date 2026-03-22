@@ -128,6 +128,9 @@ class CatAPI:
         if not isinstance(limit, int):
             raise ValueError(f'Invalid limit {limit}. It should be an integer')
 
+        if limit < 0:
+            raise ValueError(f'Invalid limit {limit}. It should be a positive integer')
+
         allowed_sizes = ('small', 'med', 'full')
         if size not in allowed_sizes:
             raise ValueError(f'Invalid size "{size}". Allowed values: {", ".join(allowed_sizes)}')
