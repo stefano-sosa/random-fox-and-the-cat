@@ -36,6 +36,7 @@ class CatAPI:
         self.collage = None
         self.breeds = []
         self.version = None
+        self._original_images = []
         self.images = []
     
     def fetch_version(self):
@@ -219,12 +220,32 @@ class CatAPI:
         if factor <= 0:
             raise ValueError('Factor must be positive')
 
+        self._original_images = self.images
         resized_images = []
         for img in self.images:
             rows, cols = img.size
             resized_images.append(img.resize((int(rows * factor), int(cols * factor))))
 
         self.images = resized_images
+
+    def restore_images(self):
+        """
+        Parameters
+        ----------
+        No parameters
+        
+        Description:
+        -----------
+        Replaces the existing images with the originals.
+
+        Raises
+        ------
+        ValueError
+            If no original images exists.
+        """
+        if not self._original_images:
+            raise ValueError('No original image to restore. Call resize_images() first')
+        self.images = self._original_images
             
     def __getitem__(self, args):    
         if not isinstance(args, int):
