@@ -222,7 +222,7 @@ class CatAPI:
         resized_images = []
         for img in self.images:
             rows, cols = img.size
-            resized_images.append(img.resize((rows * factor, cols * factor)))
+            resized_images.append(img.resize((int(rows * factor), int(cols * factor))))
 
         self.images = resized_images
             
