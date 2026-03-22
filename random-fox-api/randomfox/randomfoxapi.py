@@ -186,9 +186,9 @@ class RandomFoxAPI:
             if not os.path.exists(expanded_path):
                 print(f'Directory {expanded_path} does not exist.')
                 return
-            full_path = os.path.join(expanded_path, filename)
+            full_path = os.path.join(expanded_path, imgname)
         else:
-            full_path = os.path.join('/tmp', filename)
+            full_path = os.path.join('/tmp', imgname)
         
         img_rgb.save(full_path)
         print(f'{imgname} saved at {os.path.dirname(full_path)}')
