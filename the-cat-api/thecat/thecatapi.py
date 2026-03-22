@@ -192,13 +192,39 @@ class CatAPI:
                 print(f'Could not download image {img_url}: {e}')
                 continue
         
-    def resize(self, factor):
-        try:
-            for i, img in enumerate(self.__imgs):
-                rows, cols = img.size
-                self.__imgs[i] = img.resize((rows // factor, cols // factor))
-        except:
-            raise ValueError(f'{factor} is not a valid factor')
+    def resize_images(self, factor):
+        """
+        Parameters
+        ----------
+        factor : float
+            Scaling factor (must be > 0). If factor < 1, images shrink
+
+        Description:
+        -----------
+        Resize all downloaded images by a factor
+        
+        Raises
+        ------
+        ValueError
+            If no data has been fetched.
+            If factor is not a floating point number
+            If factor is negative
+        """
+        if not self.data:
+            raise ValueError('No images. Call fetch_images() first')
+
+        if not isinstance(factor, float):
+            raise ValueError('Factor must be a float number')
+
+        if factor <= 0:
+            raise ValueError('Factor must be positive')
+
+        resized_images = []
+        for img in self.images:
+            rows, cols = img.size
+            resized_images.append(img.resize(rows * factor, cols * factor))
+
+        self.images = resized_images
             
     def __getitem__(self, args):    
         if not isinstance(args, int):
