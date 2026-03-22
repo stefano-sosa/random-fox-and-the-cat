@@ -125,7 +125,7 @@ class CatAPI:
             if not breed_id:
                 raise ValueError(f'Breed {breed} not found. Call fetch_breeds() first or check spelling')
         
-        if limit not isinstance(int):
+        if limit is not isinstance(int):
             raise ValueError(f'Invalid limit {limit}. It should be an integer')
 
         allowed_sizes = ('small', 'med', 'full')
