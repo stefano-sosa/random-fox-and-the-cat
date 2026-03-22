@@ -184,7 +184,7 @@ class RandomFoxAPI:
         if path:
             expanded_path = os.path.expanduser(path)
             if not os.path.exists(expanded_path):
-                print(f'Directory '{expanded_path}' does not exist.')
+                print(f'Directory {expanded_path} does not exist.')
                 return
             full_path = os.path.join(expanded_path, filename)
         else:
