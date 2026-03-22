@@ -190,5 +190,5 @@ class RandomFoxAPI:
         else:
             full_path = os.path.join('/tmp', imgname)
         
-        img_rgb.save(full_path)
+        img.save(full_path)
         print(f'{imgname} saved at {os.path.dirname(full_path)}')
