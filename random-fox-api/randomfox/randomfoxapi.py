@@ -72,6 +72,13 @@ class RandomFoxAPI:
         Description:
         -----------
         Performs a GET request to the API, and stores the image
+
+        Raises
+        ------
+        requests.RequestException
+            If the network request fails.
+        PIL.UnidentifiedImageError
+            If the response content is not a valid image.
         """
         try:
             response = requests.get(self._baseurl)
@@ -102,20 +109,30 @@ class RandomFoxAPI:
         Description:
         -----------
         Resize the existing image with the size specified in 'size', and then replaces it.
+
+        Raises
+        ------
+        ValueError
+            If size is invalid or no image has been fetched.
         """
+        if self.img is None:
+            raise ValueError('No image to resize. Call fetch_image() first.')
+
         if isinstance(size, int):
             new_size = (size, size)
         elif isinstance(size, (list, tuple)) and len(size) == 2:
-            new_size = (size[0], size[1])
+            w, h = size
+            if not (isinstance(w, int) and isinstance(h, int)):
+                raise ValueError('Both dimensions must be integers.')
+            new_size = w, h
         else:
-            print('Error: size must be an int or a tuple/list of two positive ints')
-            return
+            raise ValueError('Error: size must be an int or a tuple/list of two positive ints')
         
         if not all(isinstance(x, int) and x > 0 for x in new_size):
-            print("Error: dimensions must be positive integers")
-            return
+            raise ValueError('Error: dimensions must be positive integers')
 
         self.img = self._original.resize(new_size)
+        self.imgsize = self.img.size
             
     def restore_image(self):
         """
@@ -126,8 +143,16 @@ class RandomFoxAPI:
         Description:
         -----------
         Replaces the existing image with the original one.
+
+        Raises
+        ------
+        ValueError
+            If no original image exists (fetch_image not called yet).
         """
+        if self._original is None:
+            raise ValueError("No original image to restore. Call fetch_image() first.")
         self.img = self._original
+        self.imgsize = self.img.size
         
     def save_image(self, *, name='', path=''):
         """
@@ -142,29 +167,28 @@ class RandomFoxAPI:
         If no name is indicated, the class will use the name indicated in the response of the API.
         If no path is indicated the class will save the image in /tmp
         """
+        if self.img is None:
+            raise ValueError('No image to save. Call fetch_image() first.')
+
         img = self.img.convert('RGB')
 
         if name:
-            ext = self.__imgurl.split('/')[-1].split('.')[-1]
-            imgname = name + '.' + ext
+            if self.__imgurl:
+                ext = self._imgurl.split('/')[-1].split('.')[-1]
+            else:
+                ext = '.jpg'
+            imgname = f'{name}.{ext}'
         else:
-            imgname = self.__imgurl.split('/')[-1]
+            imgname = 'fox.jpg'
         
-        ipath = ''
         if path:
-            istilde = path.split('/')[0] == '~'
-            if istilde:
-                ipath = os.path.join(os.environ['HOME'], *(path[1:].split('/')))
-            else:
-                ipath = path
-                
-            if os.path.exists(ipath):
-                img.save(os.path.join(ipath,imgname))
-            else:
-                print(f'{ipath} does not exist')
-                return 
+            expanded_path = os.path.expanduser(path)
+            if not os.path.exists(expanded_path):
+                print(f'Directory '{expanded_path}' does not exist.')
+                return
+            full_path = os.path.join(expanded_path, filename)
         else:
-            ipath = os.path.join('/','tmp')
-            img.save(os.path.join(ipath,imgname))
-            
-        print(f'{imgname} saved at {ipath}')
+            full_path = os.path.join('/tmp', filename)
+        
+        img_rgb.save(full_path)
+        print(f'{imgname} saved at {os.path.dirname(full_path)}')
