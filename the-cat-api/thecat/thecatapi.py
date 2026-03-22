@@ -246,15 +246,6 @@ class CatAPI:
         if not self._original_images:
             raise ValueError('No original image to restore. Call resize_images() first')
         self.images = self._original_images
-            
-    def __getitem__(self, args):    
-        if not isinstance(args, int):
-            raise ValueError(f'{args} has to be an integer')
-        try:
-            return Image.open(BytesIO(self.__imgs[args])).resize((256, 256))
-        except IndexError:
-            numel = len(self.__urls)
-            print(f"There are only {numel} {'element' if numel==1 else 'elements'}")
     
     def create_collage(self, tam=256):
         nrows = 1
