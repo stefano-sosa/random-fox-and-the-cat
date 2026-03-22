@@ -1,1 +1,1 @@
-from .thecatapi import catAPI
+from .thecatapi import CatAPI

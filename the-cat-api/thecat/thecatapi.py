@@ -26,7 +26,7 @@ try:
 except ModuleNotFoundError:
     message('requests')
 
-class catAPI:
+class CatAPI:
     
     def __init__(self):
         self.data = []
