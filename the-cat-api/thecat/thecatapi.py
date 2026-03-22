@@ -202,7 +202,7 @@ class CatAPI:
         Description:
         -----------
         Resize all downloaded images by a factor
-        
+
         Raises
         ------
         ValueError
@@ -222,7 +222,7 @@ class CatAPI:
         resized_images = []
         for img in self.images:
             rows, cols = img.size
-            resized_images.append(img.resize(rows * factor, cols * factor))
+            resized_images.append(img.resize((rows * factor, cols * factor)))
 
         self.images = resized_images
             
