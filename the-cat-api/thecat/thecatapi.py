@@ -85,7 +85,7 @@ class CatAPI:
             If the network request fails.
         """
         try:
-            url = urljoin(baseurl, '/v1/breeds')
+            url = urljoin(self._baseurl, '/v1/breeds')
             response = requests.get(url)
             response.raise_for_status()
             breeds = response.json()
