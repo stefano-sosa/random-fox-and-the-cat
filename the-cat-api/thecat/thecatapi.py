@@ -32,7 +32,7 @@ class CatAPI:
         self._baseurl = 'https://api.thecatapi.com'
         self.data = []
         self.collage = None
-        self.breeds = None
+        self.breeds = []
         self.__urls = []
         self.__imgs = []
         self.__breedsdeco = {}
@@ -67,14 +67,35 @@ class CatAPI:
             print(f'Error: {e}')
             raise
         
-    def req_breeds(self):
-        req = requests.get(url)
-        loads = json.loads(req.content.decode('utf8'))
-        idsandnames = []
-        for load in loads:
-            self.__breedsdeco[load['name']] = load['id']
-            idsandnames.append({'Name':load['name'], 'id':load['id']})
-        self.breeds  = pd.DataFrame(idsandnames)
+    def fetch_breeds(self):
+        """
+        Parameters
+        ----------
+        No parameters
+        
+        Description:
+        -----------
+        Performs a GET request to the API, and stores the cat breeds
+
+        Raises
+        ------
+        requests.RequestException
+            If the network request fails.
+        """
+        try:
+            url = urljoin(baseurl, '/v1/breeds')
+            response = requests.get(url)
+            response.raise_for_status()
+            breeds = response.json()
+            self.breeds = [{'id':breed['id'], 'name':breed['name']} for breed in breeds]
+        except requests.exceptions.RequestException as e:
+            print(f'Network error while fetching data: {e}')
+            raise
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f'Unexpected API response: {e}')
+        except Exception as e:
+            print(f'Error: {e}')
+            raise
         
     def __storeurls(self):
         self.__urls = []
