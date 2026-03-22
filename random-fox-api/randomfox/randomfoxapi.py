@@ -26,7 +26,7 @@ except ModuleNotFoundError:
     
 class RandomFoxAPI:
     """
-    Class used to request a random image of an fox
+    Class used to request a random image of a fox
 
     Attributes
     ----------
