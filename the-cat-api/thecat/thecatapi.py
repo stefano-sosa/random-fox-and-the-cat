@@ -7,8 +7,6 @@ def message(moduleName):
 
 import os
 
-import json
-
 import random
 
 from io import BytesIO
@@ -27,16 +25,6 @@ try:
     import requests
 except ModuleNotFoundError:
     message('requests')
-
-try:
-    import numpy
-except ModuleNotFoundError:
-    message('numpy')
-    
-try:
-    import pandas as pd
-except ModuleNotFoundError:
-    message('pandas')
 
 class catAPI:
     
