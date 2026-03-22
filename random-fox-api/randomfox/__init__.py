@@ -1,1 +1,1 @@
-from .randomfoxapi import randomfoxAPI
+from .randomfoxapi import RandomFoxAPI
