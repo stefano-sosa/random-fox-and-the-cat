@@ -35,9 +35,6 @@ class CatAPI:
         self.data = []
         self.collage = None
         self.breeds = []
-        self.__urls = []
-        self.__imgs = []
-        self.__breedsdeco = {}
         self.version = None
     
     def fetch_version(self):
@@ -98,41 +95,61 @@ class CatAPI:
         except Exception as e:
             print(f'Error: {e}')
             raise
+            
+    def fetch_images(self, *, limit=1, breed='', size='small'):
+        """
+        Parameters
+        ----------
+        limit: int
+            Maximum number of images to request
+        breed: str
+            Breed name (must be one of the available breeds)
+        size : str
+            Image size ('small', 'med', 'full')
         
-    def __storeurls(self):
-        self.__urls = []
-        for load in self.data:
-            if load['url'] not in self.__urls:
-                self.__urls.append(load['url'])
-            
-    def __storeimgs(self):
-        self.__imgs = []
-        for url in self.__urls:
-            dataurlres = requests.get(url)
-            if dataurlres not in self.__imgs:
-                self.__imgs.append(dataurlres.content)
-            
-    def req_images(self, *, limit=1, breed='', size='small'):
-        query_params = {
-            'limit' : limit,
-            'size' : size,
-            'breed_ids' : self.__breedsdeco.get(breed, '')
-        }
-        url = self.__buildURL(
-            scheme = self.__scheme, 
-            netloc = self.__netloc, 
-            path = '', 
-            url = 'v1/images/search', 
-            query_params = query_params, 
-            fragment = ''
-        )
-        req = requests.get(url)
-        data = json.loads(req.content)
-        if len(data) > limit:
-            data = random.sample(data, limit)
-        self.data = data
-        self.__storeurls()
-        self.__storeimgs()
+        Description:
+        -----------
+        Performs a GET request to the API, and fetch the cat images
+
+        Raises
+        ------
+        requests.RequestException
+            If the network request fails.
+        """
+        breed_id = ''
+        if breed:
+            for b in self.breeds:
+                if b['name'].lower() == breed.lower():
+                    breed_id = b['id']
+                    break
+            if not breed_id:
+                raise ValueError(f'Breed {breed} not found. Call fetch_breeds() first or check spelling.')
+
+        allowed_sizes = ('small', 'med', 'full')
+        if size not in allowed_sizes:
+            raise ValueError(f'Invalid size "{size}". Allowed values: {", ".join(allowed_sizes)}')
+        
+        try:
+            url = urljoin(self._baseurl, '/v1/images/search')
+            params = {
+                'limit': limit,
+                'size': size,
+                'breed_ids': breed_id
+            }
+            req = requests.get(url, params=params)
+            response.raise_for_status()
+            self.data = response.json()
+            if len(data) > limit:
+                self.data = random.sample(self.data, limit)
+            self.data = data
+        except requests.exceptions.RequestException as e:
+            print(f'Network error while fetching data: {e}')
+            raise
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f'Unexpected API response: {e}')
+        except Exception as e:
+            print(f'Error: {e}')
+            raise
         
     def resize(self, factor):
         try:
