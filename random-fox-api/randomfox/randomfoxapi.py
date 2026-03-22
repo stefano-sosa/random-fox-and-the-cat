@@ -173,7 +173,7 @@ class RandomFoxAPI:
         img = self.img.convert('RGB')
 
         if name:
-            if self.__imgurl:
+            if self._imgurl:
                 ext = self._imgurl.split('/')[-1].split('.')[-1]
             else:
                 ext = '.jpg'
