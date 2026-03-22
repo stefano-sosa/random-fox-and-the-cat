@@ -36,23 +36,39 @@ class CatAPI:
         self.__urls = []
         self.__imgs = []
         self.__breedsdeco = {}
-        self.version = ''
+        self.version = None
     
-    def req_version(self):
-        url = self.__buildURL(scheme=self.__scheme, netloc=self.__netloc)
-        req = requests.get(url)
-        loads = json.loads(req.content)
-        self.version = f"{loads['message']} {loads['version']}"
+    def fetch_version(self):
+        """
+        Parameters
+        ----------
+        No parameters
+        
+        Description:
+        -----------
+        Performs a GET request to the API, and stores the version
+
+        Raises
+        ------
+        requests.RequestException
+            If the network request fails.
+        """
+        try:
+            response = requests.get(self._baseurl)
+            response.raise_for_status()
+            data = response.json()
+            loads = json.loads(req.content)
+            self.version = f'{data["message"]} {data["version"]}'
+        except requests.exceptions.RequestException as e:
+            print(f'Network error while fetching image: {e}')
+            raise
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f'Unexpected API response: {e}')
+        except Exception as e:
+            print(f'Failed to open image: {e}')
+            raise
         
     def req_breeds(self):
-        url = self.__buildURL(
-            scheme = self.__scheme, 
-            netloc = self.__netloc, 
-            path = '', 
-            url = '/v1/breeds', 
-            query_params={}, 
-            fragment=''
-        )
         req = requests.get(url)
         loads = json.loads(req.content.decode('utf8'))
         idsandnames = []
