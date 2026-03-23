@@ -126,7 +126,7 @@ Debería observar una imagen llamada `fox.jpg` en el directorio en el que ejecut
 python -c "from thecat import CatAPI; cat = CatAPI(); cat.fetch_images(limit=3); cat.download_images(); cat.save_image(0, path='.'); cat.create_collage(); cat.save_collage(path='.')"
 ```
 
-Debería observar dos imágenes guardades en el directorio en el que ejecutó el comando.
+Debería observar dos imágenes guardadas en el directorio en el que ejecutó el comando.
 
 ### Desactivar el entorno (cuando haya terminado)
 
