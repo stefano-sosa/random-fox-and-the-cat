@@ -325,10 +325,10 @@ class CatAPI:
                 return
             full_path = os.path.join(expanded_path, filename)
         else:
-            full_path = os.path.join('/tmp', imgname)
+            full_path = os.path.join('/tmp', filename)
         
         img.save(full_path)
-        print(f'{imgname} saved at {os.path.dirname(full_path)}')
+        print(f'{filename} saved at {os.path.dirname(full_path)}')
     
     def save_collage(self, name=''):
         im = self.collage.convert('RGB')
