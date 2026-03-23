@@ -330,9 +330,35 @@ class CatAPI:
         img.save(full_path)
         print(f'{filename} saved at {os.path.dirname(full_path)}')
     
-    def save_collage(self, name=''):
-        im = self.collage.convert('RGB')
-        if not name:
-            im.save(os.path.join(os.environ['HOME'],'pics','collage-'+self.queries['breed_ids']+'.jpg'))
+    def save_collage(self, name='', path=''):
+        """
+        Parameters
+        ----------
+        name: str
+        path: str
+        
+        Description:
+        -----------
+        Saves the collage image in the indicated path, with the indicated name.
+        If no name is indicated, the class will save the file as 'collage.jpg'.
+        If no path is indicated the class will save the collage in /tmp
+        """
+        if not self.collage:
+            raise ValueError('There is no collage. Call create_collage() first')
+
+        if name:
+            filename = f'{name}.jpg'
         else:
-            im.save(os.path.join(os.environ['HOME'],'pics',f'{name}-'+self.queries['breed_ids']+'.jpg'))
+            filename = 'collage.jpg'
+        
+        if path:
+            expanded_path = os.path.expanduser(path)
+            if not os.path.exists(expanded_path):
+                print(f'Directory {expanded_path} does not exist.')
+                return
+            full_path = os.path.join(expanded_path, filename)
+        else:
+            full_path = os.path.join('/tmp', filename)
+
+        self.collage.save(full_path)
+        print(f'{filename} saved at {os.path.dirname(full_path)}')
