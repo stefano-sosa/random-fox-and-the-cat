@@ -280,8 +280,7 @@ class CatAPI:
         for i in range(rows):
             y = 0
             for j in range(cols):
-                imgdata = self.images[i*cols+j]
-                cat = Image.open(BytesIO(imgdata)).convert('RGB')
+                cat = self.images[i*cols+j].convert('RGB')
                 photo = cat.resize((cell_size, cell_size))        
                 collage.paste(photo, (x,y))
                 y += tam
