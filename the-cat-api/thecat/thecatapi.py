@@ -275,8 +275,8 @@ class CatAPI:
 
         cols = n // rows
 
-        collage_width = cols * cell_size
-        collage_height = rows * cell_size
+        collage_width = rows * cell_size
+        collage_height = cols * cell_size
         collage = Image.new('RGB', (collage_width, collage_height), (255, 255, 255))
 
         x = 0
