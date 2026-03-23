@@ -276,14 +276,16 @@ class CatAPI:
         collage_height = rows * cell_size
         collage = Image.new('RGB', (collage_width, collage_height), (255, 255, 255))
 
-        for idx, img in enumerate(self.images):
-            row = idx // cols
-            col = idx % cols
-            img_resized = img.copy()
-            img_resized.thumbnail((cell_size, cell_size), Image.Resampling.LANCZOS)
-            x = col * cell_size + (cell_size - img_resized.width) // 2
-            y = row * cell_size + (cell_size - img_resized.height) // 2
-            collage.paste(img_resized, (x, y))
+        x = 0
+        for i in range(rows):
+            y = 0
+            for j in range(cols):
+                imgdata = self.images[i*cols+j]
+                cat = Image.open(BytesIO(imgdata)).convert('RGB')
+                photo = cat.resize((cell_size, cell_size))        
+                collage.paste(photo, (x,y))
+                y += tam
+            x += tam
 
         self.collage = collage
         
