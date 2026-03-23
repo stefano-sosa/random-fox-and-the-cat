@@ -248,33 +248,43 @@ class CatAPI:
         self.images = self._original_images
     
     def create_collage(self, tam=256):
-        nrows = 1
-        ncols = 1
-        numel = len(self.data)
-        
-        if not numel:
-            print('No collage can be made without images')
-            return 
-        
-        for i in range(2,numel):
-            if numel % i == 0:
-                nrows = i
-                break
-                
-        ncols = numel // nrows
-        
-        collage = Image.new("RGBA", (nrows*tam, ncols*tam), color=(255,255,255,255))
-        
-        x = 0
-        for i in range(nrows):
-            y = 0
-            for j in range(ncols):
-                imgdata = self.__imgs[i*ncols+j]
-                cat = Image.open(BytesIO(imgdata)).convert("RGBA")
-                photo = cat.resize((tam, tam))        
-                collage.paste(photo, (x,y))
-                y += tam
-            x += tam
+        """
+        Parameters
+        ----------
+        cell_size : int
+            Size of each cell in pixels (width and height).
+
+        Description:
+        -----------
+        Create a collage from downloaded images, arranging them as square as possible
+
+        Raises
+        ------
+        ValueError
+            If no images are available.
+        """
+        n = len(self.images)
+        if n == 0:
+            raise ValueError('No images to create collage. Call download_images() first.')
+
+        rows = int(n ** 0.5)
+        while n % rows != 0:
+            rows -= 1
+        cols = n // rows
+
+        collage_width = cols * cell_size
+        collage_height = rows * cell_size
+        collage = Image.new('RGB', (collage_width, collage_height), (255, 255, 255))
+
+        for idx, img in enumerate(self.images):
+            row = idx // cols
+            col = idx % cols
+            img_resized = img.copy()
+            img_resized.thumbnail((cell_size, cell_size), Image.Resampling.LANCZOS)
+            x = col * cell_size + (cell_size - img_resized.width) // 2
+            y = row * cell_size + (cell_size - img_resized.height) // 2
+            collage.paste(img_resized, (x, y))
+
         self.collage = collage
         
     def save(self):
