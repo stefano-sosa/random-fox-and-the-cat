@@ -247,7 +247,7 @@ class CatAPI:
             raise ValueError('No original image to restore. Call resize_images() first')
         self.images = self._original_images
     
-    def create_collage(self, tam=256):
+    def create_collage(self, cell_size=256):
         """
         Parameters
         ----------
