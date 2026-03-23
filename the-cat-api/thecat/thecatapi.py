@@ -291,10 +291,44 @@ class CatAPI:
 
         self.collage = collage
         
-    def save(self):
-        for data, img in zip(self.data,self.__imgs):
-            name = data['url'].split('/')[-1]
-            img.save(os.path.join(os.environ['HOME'],'pics',name))
+    def save_image(self, index, name='', path=''):
+        """
+        Parameters
+        ----------
+        index: int
+        name: str
+        path: str
+        
+        Description:
+        -----------
+        Saves the image requested  in the indicated path, with the indicated name.
+        If no name is indicated, the class will use the name indicated in the response of the API.
+        If no path is indicated the class will save the image in /tmp
+        """
+        if not self.images:
+            raise ValueError('No images downloaded. Call download_images() first.')
+        img = self.images[index]
+
+        if name:
+            filename = f'{name}.jpg'
+        else:
+            if index < len(self.data):
+                img_id = self.data[index].get('id', 'cat')
+                filename = f'{img_id}.jpg'
+            else:
+                filename = f'cat_{index}.jpg'
+        
+        if path:
+            expanded_path = os.path.expanduser(path)
+            if not os.path.exists(expanded_path):
+                print(f'Directory {expanded_path} does not exist.')
+                return
+            full_path = os.path.join(expanded_path, filename)
+        else:
+            full_path = os.path.join('/tmp', imgname)
+        
+        img.save(full_path)
+        print(f'{imgname} saved at {os.path.dirname(full_path)}')
     
     def save_collage(self, name=''):
         im = self.collage.convert('RGB')
