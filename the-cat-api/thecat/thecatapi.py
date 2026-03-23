@@ -283,8 +283,8 @@ class CatAPI:
                 cat = self.images[i*cols+j].convert('RGB')
                 photo = cat.resize((cell_size, cell_size))        
                 collage.paste(photo, (x,y))
-                y += tam
-            x += tam
+                y += cell_size
+            x += cell_size
 
         self.collage = collage
         
