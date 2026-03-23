@@ -118,7 +118,7 @@ pip install git+https://github.com/stefano-sosa/random-fox-and-the-cat.git#subdi
 python -c "from randomfox import RandomFoxAPI; fox = RandomFoxAPI(); fox.fetch_image(); print(fox.imgsize); fox.save_image(path='.')"
 ```
 
-Debería observar una imagen llamada `test.jpg` en el directorio en el que ejecutó el comando.
+Debería observar una imagen llamada `fox.jpg` en el directorio en el que ejecutó el comando.
 
 * Para probar `thecat`:
 
@@ -126,7 +126,7 @@ Debería observar una imagen llamada `test.jpg` en el directorio en el que ejecu
 python -c "from thecat import CatAPI; cat = CatAPI(); cat.fetch_images(limit=3); cat.download_images(); cat.save_image(0, path='.'); cat.create_collage(); cat.save_collage(path='.')"
 ```
 
-Debería observar un mensaje parecido a `The Cat API 1.4.6` en la consola.
+Debería observar dos imágenes guardades en el directorio en el que ejecutó el comando.
 
 ### Desactivar el entorno (cuando haya terminado)
 
