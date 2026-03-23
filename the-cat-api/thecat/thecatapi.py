@@ -267,9 +267,11 @@ class CatAPI:
         if n == 0:
             raise ValueError('No images to create collage. Call download_images() first.')
 
-        rows = int(n ** 0.5)
-        while n % rows != 0:
-            rows -= 1
+        for i in range(2, n):
+            if n % i == 0:
+                rows = i
+                break
+
         cols = n // rows
 
         collage_width = cols * cell_size
