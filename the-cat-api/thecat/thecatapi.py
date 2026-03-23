@@ -7,9 +7,9 @@ def message(moduleName):
 
 import os
 
-import json
-
 import random
+
+import json
 
 from io import BytesIO
 
@@ -28,159 +28,337 @@ try:
 except ModuleNotFoundError:
     message('requests')
 
-try:
-    import numpy
-except ModuleNotFoundError:
-    message('numpy')
-    
-try:
-    import pandas as pd
-except ModuleNotFoundError:
-    message('pandas')
-
-class catAPI:
+class CatAPI:
     
     def __init__(self):
+        self._baseurl = 'https://api.thecatapi.com'
         self.data = []
         self.collage = None
-        self.breeds = None
-        self.__urls = []
-        self.__imgs = []
-        self.__breedsdeco = {}
-        self.__scheme = 'https'
-        self.__netloc = 'api.thecatapi.com'
-        self.version = ''
+        self.breeds = []
+        self.version = None
+        self._original_images = []
+        self.images = []
     
-    def __buildURL(self, *, scheme='', netloc='', path='', url='', query_params={}, fragment=''):
-        Components = namedtuple(
-            typename='Components', 
-            field_names=['scheme', 'netloc', 'url', 'path', 'query', 'fragment']
-        )
+    def fetch_version(self):
+        """
+        Parameters
+        ----------
+        No parameters
         
-        return urlunparse(
-            Components(
-                scheme=scheme,
-                netloc=netloc,
-                query=urlencode(query_params),
-                path=path,
-                url=url,
-                fragment=fragment
-            )
-        )
-    
-    def req_version(self):
-        url = self.__buildURL(scheme=self.__scheme, netloc=self.__netloc)
-        req = requests.get(url)
-        loads = json.loads(req.content)
-        self.version = f"{loads['message']} {loads['version']}"
-        
-    def req_breeds(self):
-        url = self.__buildURL(
-            scheme = self.__scheme, 
-            netloc = self.__netloc, 
-            path = '', 
-            url = '/v1/breeds', 
-            query_params={}, 
-            fragment=''
-        )
-        req = requests.get(url)
-        loads = json.loads(req.content.decode('utf8'))
-        idsandnames = []
-        for load in loads:
-            self.__breedsdeco[load['name']] = load['id']
-            idsandnames.append({'Name':load['name'], 'id':load['id']})
-        self.breeds  = pd.DataFrame(idsandnames)
-        
-    def __storeurls(self):
-        self.__urls = []
-        for load in self.data:
-            if load['url'] not in self.__urls:
-                self.__urls.append(load['url'])
-            
-    def __storeimgs(self):
-        self.__imgs = []
-        for url in self.__urls:
-            dataurlres = requests.get(url)
-            if dataurlres not in self.__imgs:
-                self.__imgs.append(dataurlres.content)
-            
-    def req_images(self, *, limit=1, breed='', size='small'):
-        query_params = {
-            'limit' : limit,
-            'size' : size,
-            'breed_ids' : self.__breedsdeco.get(breed, '')
-        }
-        url = self.__buildURL(
-            scheme = self.__scheme, 
-            netloc = self.__netloc, 
-            path = '', 
-            url = 'v1/images/search', 
-            query_params = query_params, 
-            fragment = ''
-        )
-        req = requests.get(url)
-        data = json.loads(req.content)
-        if len(data) > limit:
-            data = random.sample(data, limit)
-        self.data = data
-        self.__storeurls()
-        self.__storeimgs()
-        
-    def resize(self, factor):
+        Description:
+        -----------
+        Performs a GET request to the API, and stores the version
+
+        Raises
+        ------
+        requests.RequestException
+            If the network request fails.
+        """
         try:
-            for i, img in enumerate(self.__imgs):
-                rows, cols = img.size
-                self.__imgs[i] = img.resize((rows // factor, cols // factor))
-        except:
-            raise ValueError(f'{factor} is not a valid factor')
-            
-    def __getitem__(self, args):    
-        if not isinstance(args, int):
-            raise ValueError(f'{args} has to be an integer')
+            response = requests.get(self._baseurl)
+            response.raise_for_status()
+            data = response.json()
+            self.version = f'{data["message"]} {data["version"]}'
+        except requests.exceptions.RequestException as e:
+            print(f'Network error while fetching data: {e}')
+            raise
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f'Unexpected API response: {e}')
+        except Exception as e:
+            print(f'Error: {e}')
+            raise
+        
+    def fetch_breeds(self):
+        """
+        Parameters
+        ----------
+        No parameters
+        
+        Description:
+        -----------
+        Performs a GET request to the API, and stores the cat breeds
+
+        Raises
+        ------
+        requests.RequestException
+            If the network request fails.
+        """
         try:
-            return Image.open(BytesIO(self.__imgs[args])).resize((256, 256))
-        except IndexError:
-            numel = len(self.__urls)
-            print(f"There are only {numel} {'element' if numel==1 else 'elements'}")
+            url = urljoin(self._baseurl, '/v1/breeds')
+            response = requests.get(url)
+            response.raise_for_status()
+            breeds = response.json()
+            self.breeds = [{'id':breed['id'], 'name':breed['name']} for breed in breeds]
+        except requests.exceptions.RequestException as e:
+            print(f'Network error while fetching data: {e}')
+            raise
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f'Unexpected API response: {e}')
+        except Exception as e:
+            print(f'Error: {e}')
+            raise
+            
+    def fetch_images(self, *, limit=1, breed='', size='small'):
+        """
+        Parameters
+        ----------
+        limit: int
+            Maximum number of images to request
+        breed: str
+            Breed name (must be one of the available breeds)
+        size : str
+            Image size ('small', 'med', 'full')
+        
+        Description:
+        -----------
+        Performs a GET request to the API, and fetch the cat images
+
+        Raises
+        ------
+        requests.RequestException
+            If the network request fails.
+        """
+        breed_id = ''
+        if breed:
+            for b in self.breeds:
+                if b['name'].lower() == breed.lower():
+                    breed_id = b['id']
+                    break
+            if not breed_id:
+                raise ValueError(f'Breed {breed} not found. Call fetch_breeds() first or check spelling')
+        
+        if not isinstance(limit, int):
+            raise ValueError(f'Invalid limit {limit}. It should be an integer')
+
+        if limit < 0:
+            raise ValueError(f'Invalid limit {limit}. It should be a positive integer')
+
+        allowed_sizes = ('small', 'med', 'full')
+        if size not in allowed_sizes:
+            raise ValueError(f'Invalid size "{size}". Allowed values: {", ".join(allowed_sizes)}')
+        
+        try:
+            url = urljoin(self._baseurl, '/v1/images/search')
+            params = {
+                'limit': limit,
+                'size': size,
+                'breed_ids': breed_id
+            }
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            if len(data) > limit:
+                data = random.sample(data, limit)
+            self.data = data
+        except requests.exceptions.RequestException as e:
+            print(f'Network error while fetching data: {e}')
+            raise
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f'Unexpected API response: {e}')
+        except Exception as e:
+            print(f'Error: {e}')
+            raise
+
+    def download_images(self):
+        """
+        Parameters
+        ----------
+        No parameters
+
+        Description:
+        -----------
+        Download all images from the current data
+
+        Raises
+        ------
+        ValueError
+            If no data has been fetched.
+        requests.RequestException
+            If any download fails.
+        """
+        if not self.data:
+            raise ValueError('No images. Call fetch_images() first')
+
+        self.images = []
+        for item in self.data:
+            img_url = item.get('url')
+            if not img_url:
+                continue
+            try:
+                img_response = requests.get(img_url)
+                img_response.raise_for_status()
+                img = Image.open(BytesIO(img_response.content)).convert('RGB')
+                self.images.append(img)
+            except Exception as e:
+                print(f'Could not download image {img_url}: {e}')
+                continue
+        
+    def resize_images(self, factor):
+        """
+        Parameters
+        ----------
+        factor : float
+            Scaling factor (must be > 0). If factor < 1, images shrink
+
+        Description:
+        -----------
+        Resize all downloaded images by a factor
+
+        Raises
+        ------
+        ValueError
+            If no data has been fetched.
+            If factor is not a floating point number
+            If factor is negative
+        """
+        if not self.data:
+            raise ValueError('No images. Call fetch_images() first')
+
+        if not isinstance(factor, float):
+            raise ValueError('Factor must be a float number')
+
+        if factor <= 0:
+            raise ValueError('Factor must be positive')
+
+        self._original_images = self.images
+        resized_images = []
+        for img in self.images:
+            rows, cols = img.size
+            resized_images.append(img.resize((int(rows * factor), int(cols * factor))))
+
+        self.images = resized_images
+
+    def restore_images(self):
+        """
+        Parameters
+        ----------
+        No parameters
+        
+        Description:
+        -----------
+        Replaces the existing images with the originals.
+
+        Raises
+        ------
+        ValueError
+            If no original images exists.
+        """
+        if not self._original_images:
+            raise ValueError('No original image to restore. Call resize_images() first')
+        self.images = self._original_images
     
-    def create_collage(self, tam=256):
-        nrows = 1
-        ncols = 1
-        numel = len(self.data)
-        
-        if not numel:
-            print('No collage can be made without images')
-            return 
-        
-        for i in range(2,numel):
-            if numel % i == 0:
-                nrows = i
+    def create_collage(self, cell_size=256):
+        """
+        Parameters
+        ----------
+        cell_size : int
+            Size of each cell in pixels (width and height).
+
+        Description:
+        -----------
+        Create a collage from downloaded images, arranging them as square as possible
+
+        Raises
+        ------
+        ValueError
+            If no images are available.
+        """
+        n = len(self.images)
+        if n == 0:
+            raise ValueError('No images to create collage. Call download_images() first.')
+
+        rows = 1
+        for i in range(2, n):
+            if n % i == 0:
+                rows = i
                 break
-                
-        ncols = numel // nrows
-        
-        collage = Image.new("RGBA", (nrows*tam, ncols*tam), color=(255,255,255,255))
-        
+
+        cols = n // rows
+
+        collage_width = rows * cell_size
+        collage_height = cols * cell_size
+        collage = Image.new('RGB', (collage_width, collage_height), (255, 255, 255))
+
         x = 0
-        for i in range(nrows):
+        for i in range(rows):
             y = 0
-            for j in range(ncols):
-                imgdata = self.__imgs[i*ncols+j]
-                cat = Image.open(BytesIO(imgdata)).convert("RGBA")
-                photo = cat.resize((tam, tam))        
+            for j in range(cols):
+                cat = self.images[i*cols+j].convert('RGB')
+                photo = cat.resize((cell_size, cell_size))        
                 collage.paste(photo, (x,y))
-                y += tam
-            x += tam
+                y += cell_size
+            x += cell_size
+
         self.collage = collage
         
-    def save(self):
-        for data, img in zip(self.data,self.__imgs):
-            name = data['url'].split('/')[-1]
-            img.save(os.path.join(os.environ['HOME'],'pics',name))
-    
-    def save_collage(self, name=''):
-        im = self.collage.convert('RGB')
-        if not name:
-            im.save(os.path.join(os.environ['HOME'],'pics','collage-'+self.queries['breed_ids']+'.jpg'))
+    def save_image(self, index, name='', path=''):
+        """
+        Parameters
+        ----------
+        index: int
+        name: str
+        path: str
+        
+        Description:
+        -----------
+        Saves the image requested  in the indicated path, with the indicated name.
+        If no name is indicated, the class will use the name indicated in the response of the API.
+        If no path is indicated the class will save the image in /tmp
+        """
+        if not self.images:
+            raise ValueError('No images downloaded. Call download_images() first.')
+        img = self.images[index]
+
+        if name:
+            filename = f'{name}.jpg'
         else:
-            im.save(os.path.join(os.environ['HOME'],'pics',f'{name}-'+self.queries['breed_ids']+'.jpg'))
+            if index < len(self.data):
+                img_id = self.data[index].get('id', 'cat')
+                filename = f'{img_id}.jpg'
+            else:
+                filename = f'cat_{index}.jpg'
+        
+        if path:
+            expanded_path = os.path.expanduser(path)
+            if not os.path.exists(expanded_path):
+                print(f'Directory {expanded_path} does not exist.')
+                return
+            full_path = os.path.join(expanded_path, filename)
+        else:
+            full_path = os.path.join('/tmp', filename)
+        
+        img.save(full_path)
+        print(f'{filename} saved at {os.path.dirname(full_path)}')
+    
+    def save_collage(self, name='', path=''):
+        """
+        Parameters
+        ----------
+        name: str
+        path: str
+        
+        Description:
+        -----------
+        Saves the collage image in the indicated path, with the indicated name.
+        If no name is indicated, the class will save the file as 'collage.jpg'.
+        If no path is indicated the class will save the collage in /tmp
+        """
+        if not self.collage:
+            raise ValueError('There is no collage. Call create_collage() first')
+
+        if name:
+            filename = f'{name}.jpg'
+        else:
+            filename = 'collage.jpg'
+        
+        if path:
+            expanded_path = os.path.expanduser(path)
+            if not os.path.exists(expanded_path):
+                print(f'Directory {expanded_path} does not exist.')
+                return
+            full_path = os.path.join(expanded_path, filename)
+        else:
+            full_path = os.path.join('/tmp', filename)
+
+        self.collage.save(full_path)
+        print(f'{filename} saved at {os.path.dirname(full_path)}')
